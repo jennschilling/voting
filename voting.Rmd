@@ -1,0 +1,105 @@
+---
+title: "Voting Data Analysis"
+author: "Jenn Schilling"
+date: "8/22/2020"
+output: html_document
+---
+
+# Plan
+
+Explore election/voting data available from the U.S. Election Assistance Commission to show the percentage of voters who vote by mail, have mail-in ballots rejected, and the reasons for mail in ballot rejection. Examine data from 2016 and 2018. Compare these years to data collected by NPR in 2020. 
+
+## Data Points Needed
+
+### U.S. Election Assistance Commission 
+* FIPSCode (Jurisdiction identification code)
+* State
+* Jurisdiction Name
+* Number of registered, eligible voters (A1a)
+* Number of active, registered, eligible voters (A3a)
+* Number of domestic civilian absentee/mail-in ballots transmitted to voters (C1a)
+* Number of absentee/mail-in ballots returned for counting (C1b)
+* Number of absentee/mail-in ballots counted (2016 C4a, 2018 C3a)
+* Number of absentee/mail-in ballots rejected (2016 C4b, 2018 C4a)  
+* Number rejected by reason 
+  + Missed deadline (2016 C5a, 2018 C4b)  
+  + No signature (2016 C5b, 2018 C4c)  
+  + No witness signature (2016 C5c, 2018 C4d)  
+  + Non-matching signature (2016 C5d, 2018 C4e)  
+  + No election official's signature (2016 C5e, 2018 C4f)  
+  + Unofficial envelope (2016 C5f, 2018 C4g)  
+  + Ballot missing from envelope (2016 C5g, 2018 C4h)  
+  + Envelope not sealed (2016 C5h, 2018 C4i)  
+  + No resident address on envelope (2016 C5i, 2018 C4j)  
+  + Multiple ballots in one envelope (2016 C5j, 2018 C4k)  
+  + Voter deceased (2016 C5k, 2018 C4l)  
+  + Voted in person (2016 C5l, 2018 C4m)  
+  + First-time voter without proper identification (2016 C5m, 2018 C4n)  
+  + No ballot application on record (2016 C5n, 2018 C4o)  
+  + Other (2016 C5o-C5v, 2018 C4o-C4r)  
+* Total votes cast (2016 D1a, 2018 D1a)
+
+# Setup  
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libaries
+library(tidyverse)
+
+# Data
+
+# Election Administration and Voting Survey Data - 2016
+eavs_2016 <- read.csv("EAVS 2016 Final Data for Public Release v.3.csv", 
+                      stringsAsFactors = FALSE)
+
+# Election Administration and Voting Survey Data - 2018
+eavs_2018 <- read.csv("EAVS_2018_for_Public_Release_Updates3.csv", 
+                      stringsAsFactors = FALSE)
+
+# NPR Article - 2020
+# Will need to learn how to get the table via webscraping
+
+```
+
+# Data Processing 
+
+```{r processing}
+
+# Get variables of interest
+# Fill in NAs
+eavs_2016_p <- eavs_2016 %>%
+  select(FIPSCode,
+         State,
+         JurisdictionName,
+         A1a,
+         A3a,
+         C1a,
+         C1b,
+         C4a,
+         C4b,
+         C5a,
+         C5b,
+         C5c,
+         C5d,
+         C5e,
+         C5f,
+         C5g,
+         C5h,
+         C5i,
+         C5j,
+         C5k,
+         C5l,
+         C5m,
+         C5n,
+         D1a) %>%
+  pivot_longer(A1a:D1a, names_to = "names", values_to = "value") %>%
+  mutate(value = ifelse(str_detect(value, "Not Applicable"), NA, value)) %>%
+  pivot_wider(names_from = "names", values_from = "value")
+
+
+```
+
+
+
+Note: another interesting set of data points to examine would be how many voters are removed in different categories by state (A11 questions)
